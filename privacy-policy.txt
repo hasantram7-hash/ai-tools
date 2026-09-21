@@ -1,0 +1,1 @@
+This Privacy Policy governs the use of the SuperTools: AI & Utilities application. This app does not collect, store, or share any personal user data. All AI features and utilities process data locally or via secure API endpoints without retaining user information.
