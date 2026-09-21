@@ -189,18 +189,24 @@ fun ToolCard(
                     onClick = { onLaunch(tool) },
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = SurfaceContainerHighest,
-                        contentColor = TextPrimary
+                        containerColor = AccentPink.copy(alpha = 0.15f),
+                        contentColor = AccentWhite
                     ),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, AccentPink.copy(alpha = 0.4f)),
                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                     modifier = Modifier.testTag("launch_btn_${tool.id}")
                 ) {
-                    Text("Launch", style = MaterialTheme.typography.titleMedium.copy(fontSize = 13.sp))
+                    Text(
+                        text = "Launch",
+                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 13.sp, fontWeight = FontWeight.SemiBold),
+                        color = AccentWhite
+                    )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(14.dp),
+                        tint = AccentPink
                     )
                 }
             }
@@ -218,6 +224,16 @@ fun getToolIcon(name: String): ImageVector {
         "receipt_long" -> Icons.Default.ReceiptLong
         "palette" -> Icons.Default.Palette
         "format_align_left" -> Icons.Default.FormatAlignLeft
+        "favorite" -> Icons.Default.Favorite
+        "auto_fix_high" -> Icons.Default.AutoFixHigh
+        "auto_awesome" -> Icons.Default.AutoAwesome
+        "smart_display" -> Icons.Default.SmartDisplay
+        "chat_bubble" -> Icons.Default.ChatBubble
+        "text_fields" -> Icons.Default.TextFields
+        "casino" -> Icons.Default.Casino
+        "play_arrow" -> Icons.Default.PlayArrow
+        "wallpaper" -> Icons.Default.Wallpaper
+        "self_improvement" -> Icons.Default.SelfImprovement
         else -> Icons.Default.Widgets
     }
 }

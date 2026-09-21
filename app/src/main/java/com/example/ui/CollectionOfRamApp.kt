@@ -29,19 +29,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import com.example.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.ToolCategory
 import com.example.model.ToolItem
 import com.example.model.ToolRepository
+import com.example.ui.components.CreatorConnectSection
+import com.example.ui.components.PremiumSplashScreen
 import com.example.ui.components.FaqSection
 import com.example.ui.components.ToolCard
 import com.example.ui.components.ToolWorkspaceModal
 import com.example.ui.theme.*
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
@@ -52,6 +60,9 @@ fun CollectionOfRamApp() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
+
+    var isSplashVisible by remember { mutableStateOf(true) }
+    var isConnectModalVisible by remember { mutableStateOf(false) }
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf(ToolCategory.ALL) }
@@ -99,7 +110,7 @@ fun CollectionOfRamApp() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BgDark)
+            .background(BgLightGray)
     ) {
         // Ambient background glow nodes
         Box(
@@ -107,7 +118,7 @@ fun CollectionOfRamApp() {
                 .size(320.dp)
                 .offset(x = (-40).dp, y = (-20).dp)
                 .clip(CircleShape)
-                .background(AccentPurple.copy(alpha = 0.12f))
+                .background(AccentPurple.copy(alpha = 0.05f))
         )
         Box(
             modifier = Modifier
@@ -115,7 +126,7 @@ fun CollectionOfRamApp() {
                 .align(Alignment.TopEnd)
                 .offset(x = 60.dp, y = 180.dp)
                 .clip(CircleShape)
-                .background(AccentCyan.copy(alpha = 0.08f))
+                .background(AccentCyan.copy(alpha = 0.04f))
         )
         Box(
             modifier = Modifier
@@ -123,7 +134,7 @@ fun CollectionOfRamApp() {
                 .align(Alignment.BottomStart)
                 .offset(x = 40.dp, y = 40.dp)
                 .clip(CircleShape)
-                .background(AccentPink.copy(alpha = 0.08f))
+                .background(AccentPink.copy(alpha = 0.04f))
         )
 
         Scaffold(
@@ -134,7 +145,37 @@ fun CollectionOfRamApp() {
                     onSelectToolKey = { key ->
                         val target = ToolRepository.tools.firstOrNull { it.id == key }
                         if (target != null) activeToolModal = target
-                    }
+                    },
+                    onOpenChat = {
+                        val chatTool = ToolRepository.tools.firstOrNull { it.id == "ram_chat" }
+                        if (chatTool != null) activeToolModal = chatTool
+                    },
+                    onOpenConnect = { isConnectModalVisible = true }
+                )
+            },
+            floatingActionButton = {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        val chatTool = ToolRepository.tools.firstOrNull { it.id == "ram_chat" }
+                        if (chatTool != null) activeToolModal = chatTool
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.SmartToy,
+                            contentDescription = "Ram AI Assistant",
+                            tint = Color.White
+                        )
+                    },
+                    text = {
+                        Text(
+                            text = "Ask Ram AI",
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                            color = Color.White
+                        )
+                    },
+                    containerColor = AccentPink,
+                    contentColor = Color.White,
+                    modifier = Modifier.testTag("floating_ai_chat_button")
                 )
             }
         ) { paddingValues ->
@@ -197,6 +238,16 @@ fun CollectionOfRamApp() {
                     }
                 }
 
+                // CREATOR CONNECT PROFILE & SOCIAL LINKS
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Spacer(modifier = Modifier.height(18.dp))
+                    CreatorConnectSection(
+                        onCopyFeedback = { feedback ->
+                            copyToClipboard(feedback, feedback)
+                        }
+                    )
+                }
+
                 // FAQ ACCORDION SECTION
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Spacer(modifier = Modifier.height(16.dp))
@@ -227,6 +278,46 @@ fun CollectionOfRamApp() {
             )
         }
 
+        // Connect With Creator Dialog
+        if (isConnectModalVisible) {
+            Dialog(
+                onDismissRequest = { isConnectModalVisible = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.75f))
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        horizontalAlignment = Alignment.End,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        IconButton(
+                            onClick = { isConnectModalVisible = false },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(SurfaceContainerHigh)
+                        ) {
+                            Icon(imageVector = Icons.Default.Close, contentDescription = "Close", tint = AccentWhite)
+                        }
+
+                        CreatorConnectSection(
+                            onCopyFeedback = { feedback ->
+                                copyToClipboard(feedback, feedback)
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
         // Floating Toast Notification
         AnimatedVisibility(
             visible = toastMessage != null,
@@ -250,7 +341,7 @@ fun CollectionOfRamApp() {
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = null,
-                        tint = AccentCyan,
+                        tint = AccentPink,
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
@@ -261,19 +352,32 @@ fun CollectionOfRamApp() {
                 }
             }
         }
+
+        // Animated Splash Screen overlay on app launch
+        AnimatedVisibility(
+            visible = isSplashVisible,
+            enter = fadeIn(),
+            exit = fadeOut(animationSpec = tween(400))
+        ) {
+            PremiumSplashScreen(
+                onFinished = { isSplashVisible = false }
+            )
+        }
     }
 }
 
 @Composable
 fun RamHeader(
     onRandomTool: () -> Unit,
-    onSelectToolKey: (String) -> Unit
+    onSelectToolKey: (String) -> Unit,
+    onOpenChat: () -> Unit,
+    onOpenConnect: () -> Unit
 ) {
     Surface(
-        color = BgDark.copy(alpha = 0.85f),
+        color = BgDark.copy(alpha = 0.90f),
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, BorderOutline.copy(alpha = 0.2f))
+            .border(1.dp, BorderOutline.copy(alpha = 0.25f))
     ) {
         Row(
             modifier = Modifier
@@ -288,36 +392,27 @@ fun RamHeader(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // Neon glowing 'R' avatar badge
+                // Casual Branded App Logo with pink-white gradient border
                 Box(
                     modifier = Modifier
-                        .size(38.dp)
-                        .clip(CircleShape)
+                        .size(42.dp)
+                        .clip(RoundedCornerShape(12.dp))
                         .background(
                             Brush.linearGradient(
-                                listOf(AccentPurple, AccentCyan)
+                                listOf(AccentPink, AccentWhite, AccentRose)
                             )
                         )
                         .padding(1.5.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Box(
+                    androidx.compose.foundation.Image(
+                        painter = painterResource(id = R.drawable.casual_brand_logo_1789965718729),
+                        contentDescription = "Collection of Ram Brand Logo",
                         modifier = Modifier
                             .fillMaxSize()
-                            .clip(CircleShape)
-                            .background(SurfaceContainerLowest),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "R",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontFamily = SoraFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp
-                            ),
-                            color = Color.White
-                        )
-                    }
+                            .clip(RoundedCornerShape(10.dp)),
+                        contentScale = ContentScale.Crop
+                    )
                 }
 
                 Column {
@@ -330,18 +425,35 @@ fun RamHeader(
                         color = TextPrimary
                     )
                     Text(
-                        text = "Simple tools. Beautifully crafted.",
+                        text = "By Hem Narayan • 22+ Tools",
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
+                        color = AccentRose
                     )
                 }
             }
 
-            // Right header actions: Casino Random Tool + CR Avatar badge
+            // Right header actions: Ram AI Chat + Casino Random Tool + CR Avatar badge
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                // AI Assistant Header Button
+                IconButton(
+                    onClick = onOpenChat,
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(AccentPink.copy(alpha = 0.15f))
+                        .testTag("open_ai_chat_header_button")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SmartToy,
+                        contentDescription = "Ram AI Assistant",
+                        tint = AccentPink,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
                 IconButton(
                     onClick = onRandomTool,
                     modifier = Modifier
@@ -353,20 +465,22 @@ fun RamHeader(
                     Icon(
                         imageVector = Icons.Default.Casino,
                         contentDescription = "Random Tool",
-                        tint = AccentCyan,
+                        tint = AccentWhite,
                         modifier = Modifier.size(20.dp)
                     )
                 }
 
-                // CR Initials Pill
+                // HN / CR Creator Initials Pill (Clickable to connect with creator)
                 Box(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
                         .background(
-                            Brush.linearGradient(listOf(AccentPurple, AccentCyan))
+                            Brush.linearGradient(listOf(AccentPink, AccentWhite, AccentRose))
                         )
-                        .padding(1.dp),
+                        .padding(1.5.dp)
+                        .clickable { onOpenConnect() }
+                        .testTag("creator_profile_header_button"),
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
@@ -377,9 +491,9 @@ fun RamHeader(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "CR",
+                            text = "HN",
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = Color.White
+                            color = AccentRose
                         )
                     }
                 }
@@ -404,8 +518,8 @@ fun HeroSection(
         Row(
             modifier = Modifier
                 .clip(CircleShape)
-                .background(SurfaceContainerHigh.copy(alpha = 0.6f))
-                .border(1.dp, BorderOutline.copy(alpha = 0.3f), CircleShape)
+                .background(SurfaceContainerHigh.copy(alpha = 0.8f))
+                .border(1.dp, AccentPink.copy(alpha = 0.35f), CircleShape)
                 .padding(horizontal = 14.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -414,7 +528,7 @@ fun HeroSection(
                 modifier = Modifier
                     .size(8.dp)
                     .clip(CircleShape)
-                    .background(AccentCyan)
+                    .background(AccentPink)
             )
             Text(
                 text = "COLLECTION OF RAM",
@@ -422,12 +536,12 @@ fun HeroSection(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.2.sp
                 ),
-                color = AccentCyan
+                color = AccentRose
             )
             Text(
                 text = "100% Free & Private",
                 style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary,
+                color = AccentWhite,
                 modifier = Modifier
                     .clip(CircleShape)
                     .background(SurfaceContainerHighest)
@@ -435,7 +549,7 @@ fun HeroSection(
             )
         }
 
-        // Hero headline with gradient
+        // Hero headline
         Text(
             text = "Free Online Tools",
             style = MaterialTheme.typography.headlineLarge.copy(
@@ -444,7 +558,7 @@ fun HeroSection(
                 fontSize = 36.sp,
                 lineHeight = 44.sp
             ),
-            color = Color.White,
+            color = TextPrimary,
             textAlign = TextAlign.Center
         )
 
@@ -467,7 +581,7 @@ fun HeroSection(
                 onClick = onExploreTools,
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = AccentPurple,
+                    containerColor = AccentPink,
                     contentColor = Color.White
                 ),
                 contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
@@ -488,7 +602,7 @@ fun HeroSection(
             OutlinedButton(
                 onClick = onRandomTool,
                 shape = RoundedCornerShape(14.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, BorderOutline),
+                border = androidx.compose.foundation.BorderStroke(1.dp, AccentPink.copy(alpha = 0.5f)),
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = SurfaceContainerHigh.copy(alpha = 0.7f),
                     contentColor = TextPrimary
@@ -499,7 +613,7 @@ fun HeroSection(
                 Icon(
                     imageVector = Icons.Default.Casino,
                     contentDescription = null,
-                    tint = AccentCyan,
+                    tint = AccentRose,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
@@ -534,7 +648,7 @@ fun SearchAndFilterSection(
                 .testTag("tool_search_input"),
             placeholder = {
                 Text(
-                    "Search 8 instant tools (e.g., 'password', 'compress', 'qr', 'palette')...",
+                    "Search 22+ instant tools (e.g., 'bmi', 'water', 'sleep', 'pomodoro', 'tweet')...",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextMuted
                 )
@@ -581,8 +695,11 @@ fun SearchAndFilterSection(
             ToolCategory.entries.forEach { category ->
                 val isSelected = selectedCategory == category
                 val label = when (category) {
-                    ToolCategory.ALL -> "All (8)"
-                    else -> category.displayName
+                    ToolCategory.ALL -> "All (${ToolRepository.tools.size})"
+                    else -> {
+                        val count = ToolRepository.tools.count { it.category == category }
+                        "${category.displayName} ($count)"
+                    }
                 }
                 Box(
                     modifier = Modifier
@@ -624,7 +741,7 @@ fun SearchAndFilterSection(
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
-                    text = "Showing $totalVisible of 8 utilities",
+                    text = "Showing $totalVisible of ${ToolRepository.tools.size} utilities",
                     style = MaterialTheme.typography.labelSmall,
                     color = TextSecondary
                 )
@@ -640,22 +757,49 @@ fun SearchAndFilterSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "POPULAR:",
+                text = "FEATURED:",
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                 color = TextMuted
             )
 
-            QuickChip(label = "Password Gen", icon = Icons.Default.VpnKey, tint = AccentPurple) {
-                onQuickLaunch("password")
+            QuickChip(label = "Ask Ram AI", icon = Icons.Default.SmartToy, tint = AccentPurple) {
+                onQuickLaunch("ram_chat")
             }
-            QuickChip(label = "QR Matrix", icon = Icons.Default.QrCode, tint = AccentCyan) {
-                onQuickLaunch("qr")
+            QuickChip(label = "BMI Health", icon = Icons.Default.FitnessCenter, tint = AccentCyan) {
+                onQuickLaunch("bmi")
             }
-            QuickChip(label = "Palette Studio", icon = Icons.Default.Palette, tint = AccentPink) {
-                onQuickLaunch("palette")
+            QuickChip(label = "Water Tracker", icon = Icons.Default.LocalDrink, tint = AccentCyan) {
+                onQuickLaunch("water")
             }
-            QuickChip(label = "Image Shrinker", icon = Icons.Default.Compress, tint = AccentPurple) {
-                onQuickLaunch("compressor")
+            QuickChip(label = "Sleep Cycle", icon = Icons.Default.Bedtime, tint = AccentPurple) {
+                onQuickLaunch("sleep")
+            }
+            QuickChip(label = "Pomodoro", icon = Icons.Default.Timer, tint = AccentPink) {
+                onQuickLaunch("pomodoro")
+            }
+            QuickChip(label = "Fake Tweet", icon = Icons.Default.ChatBubble, tint = AccentPurple) {
+                onQuickLaunch("tweet_meme")
+            }
+            QuickChip(label = "Bio Fonts", icon = Icons.Default.TextFields, tint = AccentCyan) {
+                onQuickLaunch("fancy_fonts")
+            }
+            QuickChip(label = "Spin Wheel", icon = Icons.Default.Casino, tint = AccentPink) {
+                onQuickLaunch("spin_wheel")
+            }
+            QuickChip(label = "Reel Hooks", icon = Icons.Default.PlayArrow, tint = AccentPurple) {
+                onQuickLaunch("reel_hooks")
+            }
+            QuickChip(label = "Wallpapers", icon = Icons.Default.Wallpaper, tint = AccentCyan) {
+                onQuickLaunch("wallpaper")
+            }
+            QuickChip(label = "Daily Aura", icon = Icons.Default.SelfImprovement, tint = AccentPink) {
+                onQuickLaunch("aura")
+            }
+            QuickChip(label = "Love Match", icon = Icons.Default.Favorite, tint = AccentPink) {
+                onQuickLaunch("love")
+            }
+            QuickChip(label = "BG Remover", icon = Icons.Default.AutoFixHigh, tint = AccentCyan) {
+                onQuickLaunch("bg_remover")
             }
         }
     }
@@ -720,9 +864,9 @@ fun NoResultsBox(onReset: () -> Unit) {
             Button(
                 onClick = onReset,
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AccentPurple)
+                colors = ButtonDefaults.buttonColors(containerColor = AccentPink)
             ) {
-                Text("Reset Filters", style = MaterialTheme.typography.titleMedium)
+                Text("Reset Filters", style = MaterialTheme.typography.titleMedium, color = Color.White)
             }
         }
     }
@@ -751,11 +895,11 @@ fun RamFooter(onSelectToolKey: (String) -> Unit) {
                     modifier = Modifier
                         .size(28.dp)
                         .clip(CircleShape)
-                        .background(AccentPurple.copy(alpha = 0.3f))
-                        .border(1.dp, AccentPurple, CircleShape),
+                        .background(AccentPink.copy(alpha = 0.2f))
+                        .border(1.dp, AccentPink, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("R", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text("R", color = AccentWhite, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 }
                 Text(
                     text = "Collection of Ram",
@@ -765,7 +909,7 @@ fun RamFooter(onSelectToolKey: (String) -> Unit) {
             }
 
             Text(
-                text = "Simple tools. Beautifully crafted. Built with hyper-focused privacy, zero latency, and pure client compute.",
+                text = "Simple tools. Beautifully crafted by Hem Narayan. Built with hyper-focused privacy, zero latency, and pure client compute.",
                 style = MaterialTheme.typography.bodySmall,
                 color = TextSecondary
             )
@@ -773,8 +917,8 @@ fun RamFooter(onSelectToolKey: (String) -> Unit) {
             Box(
                 modifier = Modifier
                     .clip(CircleShape)
-                    .background(AccentPurple.copy(alpha = 0.15f))
-                    .border(1.dp, AccentPurple.copy(alpha = 0.25f), CircleShape)
+                    .background(AccentPink.copy(alpha = 0.12f))
+                    .border(1.dp, AccentPink.copy(alpha = 0.35f), CircleShape)
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
                 Row(
@@ -785,12 +929,12 @@ fun RamFooter(onSelectToolKey: (String) -> Unit) {
                         modifier = Modifier
                             .size(6.dp)
                             .clip(CircleShape)
-                            .background(AccentCyan)
+                            .background(AccentPink)
                     )
                     Text(
                         text = "100% Client-side & Private",
                         style = MaterialTheme.typography.labelSmall,
-                        color = AccentPurple
+                        color = AccentRose
                     )
                 }
             }
@@ -805,9 +949,67 @@ fun RamFooter(onSelectToolKey: (String) -> Unit) {
             )
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                SuggestionChip(
+                    onClick = { onSelectToolKey("bmi") },
+                    label = { Text("BMI Health", color = TextPrimary) }
+                )
+                SuggestionChip(
+                    onClick = { onSelectToolKey("water") },
+                    label = { Text("Water Tracker", color = TextPrimary) }
+                )
+                SuggestionChip(
+                    onClick = { onSelectToolKey("sleep") },
+                    label = { Text("Sleep Cycle", color = TextPrimary) }
+                )
+                SuggestionChip(
+                    onClick = { onSelectToolKey("pomodoro") },
+                    label = { Text("Pomodoro Timer", color = TextPrimary) }
+                )
+                SuggestionChip(
+                    onClick = { onSelectToolKey("tweet_meme") },
+                    label = { Text("Fake Tweet", color = TextPrimary) }
+                )
+                SuggestionChip(
+                    onClick = { onSelectToolKey("fancy_fonts") },
+                    label = { Text("Bio Fonts", color = TextPrimary) }
+                )
+                SuggestionChip(
+                    onClick = { onSelectToolKey("spin_wheel") },
+                    label = { Text("Spin Wheel", color = TextPrimary) }
+                )
+                SuggestionChip(
+                    onClick = { onSelectToolKey("reel_hooks") },
+                    label = { Text("Reel Hooks", color = TextPrimary) }
+                )
+                SuggestionChip(
+                    onClick = { onSelectToolKey("wallpaper") },
+                    label = { Text("Wallpapers", color = TextPrimary) }
+                )
+                SuggestionChip(
+                    onClick = { onSelectToolKey("aura") },
+                    label = { Text("Aura Reader", color = TextPrimary) }
+                )
+                SuggestionChip(
+                    onClick = { onSelectToolKey("love") },
+                    label = { Text("Love Calculator", color = TextPrimary) }
+                )
+                SuggestionChip(
+                    onClick = { onSelectToolKey("bg_remover") },
+                    label = { Text("Photo BG Remover", color = TextPrimary) }
+                )
+                SuggestionChip(
+                    onClick = { onSelectToolKey("captions") },
+                    label = { Text("Caption Generator", color = TextPrimary) }
+                )
+                SuggestionChip(
+                    onClick = { onSelectToolKey("thumbnail") },
+                    label = { Text("Thumbnail Studio", color = TextPrimary) }
+                )
                 SuggestionChip(
                     onClick = { onSelectToolKey("password") },
                     label = { Text("Password", color = TextPrimary) }

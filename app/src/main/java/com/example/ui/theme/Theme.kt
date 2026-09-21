@@ -5,27 +5,27 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val DarkColorScheme = darkColorScheme(
-    primary = AccentPurple,
+private val PremiumColorScheme = darkColorScheme(
+    primary = AccentPink,
     onPrimary = Color.White,
     primaryContainer = SurfaceContainerHigh,
     onPrimaryContainer = TextPrimary,
-    secondary = AccentCyan,
-    onSecondary = Color(0xFF060E20),
-    secondaryContainer = Color(0xFF5C3187),
-    onSecondaryContainer = Color(0xFFD0A1FF),
-    tertiary = AccentPink,
-    onTertiary = Color(0xFF570066),
-    tertiaryContainer = Color(0xFFC76ED3),
-    onTertiaryContainer = Color(0xFF4C005A),
+    secondary = AccentRose,
+    onSecondary = Color.White,
+    secondaryContainer = SurfaceContainerHigh,
+    onSecondaryContainer = TextPrimary,
+    tertiary = AccentCyan,
+    onTertiary = Color.White,
+    tertiaryContainer = SurfaceContainerHigh,
+    onTertiaryContainer = TextPrimary,
     background = BgDark,
     onBackground = TextPrimary,
     surface = BgDark,
     onSurface = TextPrimary,
-    surfaceVariant = SurfaceContainerHigh,
+    surfaceVariant = SurfaceContainerLow,
     onSurfaceVariant = TextSecondary,
-    outline = TextMuted,
-    outlineVariant = BorderOutline,
+    outline = BorderOutline,
+    outlineVariant = BorderOutline.copy(alpha = 0.5f),
     surfaceContainerLowest = SurfaceContainerLowest,
     surfaceContainerLow = SurfaceContainerLow,
     surfaceContainer = SurfaceContainer,
@@ -39,7 +39,7 @@ fun MyApplicationTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colorScheme = DarkColorScheme,
+        colorScheme = PremiumColorScheme,
         typography = Typography,
         content = content
     )
