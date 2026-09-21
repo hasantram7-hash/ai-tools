@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Collection of Ram</string>
+    <!-- Dummy fallback to suppress FA Missing google_app_id warning when Firebase Analytics is not configured -->
+    <string name="google_app_id" translatable="false">1:000000000000:android:0000000000000000000000</string>
 </resources>

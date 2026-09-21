@@ -46,6 +46,7 @@ import com.example.ui.components.PremiumSplashScreen
 import com.example.ui.components.FaqSection
 import com.example.ui.components.ToolCard
 import com.example.ui.components.ToolWorkspaceModal
+import com.example.ui.components.AdMobBanner
 import com.example.ui.theme.*
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.window.Dialog
@@ -252,6 +253,12 @@ fun CollectionOfRamApp() {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Spacer(modifier = Modifier.height(16.dp))
                     FaqSection()
+                }
+
+                // ADMOB BANNER UNIT
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    AdMobBanner()
                 }
 
                 // FOOTER
